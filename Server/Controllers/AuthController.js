@@ -38,24 +38,27 @@ export const registerUser = async (req, res) => {
 // Login users
 
 export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-
     try {
+        const { email, password } = req.body;
+        
         const user = await UserModel.findOne({ email: email });
-
-        if (user) {
-            const validity = await bcrypt.compare(password, user.password)
-
-            if (!validity) {
-                res.status(400).json("Soory, Please enter the correct email or password!");
-            } else {
-                const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_KEY);
-                res.status(200).json({ user, token });
-            }
-        } else {
-            res.status(404).json("Soory, Please enter the correct email or password!")
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
         }
+
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ message: "Invalid password" });
+        }
+
+        const token = jwt.sign(
+            { email: user.email, id: user._id },
+            process.env.JWT_KEY,
+            { expiresIn: '24h' }
+        );
+
+        res.status(200).json({ user, token });
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        res.status(500).json({ message: error.message });
     }
-}
+};

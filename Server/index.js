@@ -21,17 +21,23 @@ app.use('/images', express.static('images'));
 // MiddleWare
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 
 dotenv.config();
 
-mongoose.connect
-    (process.env.MONGO_DB, { useNewUrlParser: true, useUnifiedTopology: true }
-    ).then(() =>
-        app.listen(process.env.PORT, () => console.log(`listening at ${process.env.PORT}`))
-    ).catch((error) =>
-        console.log('error')
-    )
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('MongoDB connection error:', error);
+  });
 
 
 // uses of routes
